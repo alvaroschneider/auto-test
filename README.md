@@ -6,7 +6,8 @@ Requisitos:
 - Agregar python al PATH de Windows para que sea visible desde cualquier directorio.
 - Tener acceso a una terminal o consola (NO funciona en PowerShell)
 
-SOLO LA PRIMERA VEZ:
+SOLO LA PRIMERA VEZ (dentro del directorio de auto-test):
+
 1- Crear entorno virtual:
 
     python -m venv venv
