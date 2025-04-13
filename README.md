@@ -16,18 +16,18 @@ Es una carpeta aislada donde instalás paquetes sin afectar el sistema.
 
 SOLO LA PRIMERA VEZ EJECUTAR ESTOS 5 PASOS.
 1. Crear entorno virtual:
-   python -m venv venv
+      python -m venv venv
 
-2. Activarlo:
+3. Activarlo:
    venv\Scripts\activate
 
-3. Instalar cryptography:
+4. Instalar cryptography:
    pip install cryptography
 
-4. Correr el test:
+5. Correr el test:
    python autotest.py
 
-5. Para salir:
+6. Para salir:
    deactivate
 
 
