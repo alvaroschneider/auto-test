@@ -3,9 +3,10 @@ import random
 import os
 import sys
 from cryptography.fernet import Fernet
+from datetime import datetime
 
 # 🔐 Clave generada desde encriptar_preguntas.py
-CLAVE = b'gkBcGQK6aWrD8OTGtoavSnuZ56EsYGPjZjxHHopxEt0='
+CLAVE = b'x1Sp4pZmVok1hfSigrwhgMsXwztsHL8YBNicwTIxjl4='
 
 def limpiar_pantalla():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -17,13 +18,32 @@ def cargar_preguntas_encriptadas(path):
     datos = fernet.decrypt(datos_encriptados).decode()
     return json.loads(datos)
 
+def guardar_log(puntaje, cantidad, respuestas_incorrectas):
+    ahora = datetime.now().strftime("%y%m%d_%H%M")
+    nombre_archivo = f"log_respuestas_{ahora}.txt"
+
+    with open(nombre_archivo, "w", encoding="utf-8") as f:
+        f.write(f"AutoTest - Resultado del {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+        f.write(f"\nPreguntas respondidas: {cantidad}")
+        f.write(f"\nPuntaje: {puntaje}/{cantidad} ({round((puntaje / cantidad) * 100)}%)")
+
+        if respuestas_incorrectas:
+            f.write("\n\nPreguntas incorrectas:")
+            for pregunta, opciones, correcta in respuestas_incorrectas:
+                f.write(f"\n\n\nPregunta: {pregunta}")
+                for idx, opcion in enumerate(opciones):
+                    f.write(f"\n{chr(65 + idx)}. {opcion}")
+                f.write(f"\n\n✅ Respuesta correcta: {correcta}")
+        else:
+            f.write("\n🎉 ¡Todas las respuestas fueron correctas!")
+
+    print(f"📝 Resultado guardado en: {nombre_archivo}")
+
 def realizar_test(preguntas, cantidad):
     puntaje = 0
     respuestas_incorrectas = []
 
     random.shuffle(preguntas)
-
-    #random.shuffle(preguntas)
     preguntas = preguntas[:cantidad]
 
     for i, pregunta in enumerate(preguntas, start=1):
@@ -55,6 +75,8 @@ def realizar_test(preguntas, cantidad):
     print(f"🏁 Test finalizado.")
     print(f"✅ Puntaje: {puntaje}/{cantidad} ({porcentaje}%)")
 
+    guardar_log(puntaje, cantidad, respuestas_incorrectas)
+
     if respuestas_incorrectas:
         print("\n📘 Repaso de respuestas incorrectas:")
         for pregunta, opciones, correcta in respuestas_incorrectas:
@@ -65,7 +87,6 @@ def realizar_test(preguntas, cantidad):
 
 if __name__ == "__main__":
     preguntas = cargar_preguntas_encriptadas("preguntas.enc")
-        # Leer cantidad de preguntas desde argumento (o usar total)
     try:
         cantidad = int(sys.argv[1])
         if cantidad < 1 or cantidad > len(preguntas):
