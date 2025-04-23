@@ -46,6 +46,7 @@ def realizar_test(preguntas, cantidad):
     random.shuffle(preguntas)
     preguntas = preguntas[:cantidad]
 
+    # Mostrar preguntas
     for i, pregunta in enumerate(preguntas, start=1):
         limpiar_pantalla()
         print(f"Pregunta {i}:\n\n{pregunta['pregunta']}")
@@ -58,7 +59,14 @@ def realizar_test(preguntas, cantidad):
                 nueva_respuesta_correcta = idx
             print(f"{chr(65 + idx)}. {opcion}")
 
-        respuesta = input("\nTu respuesta (A/B/C): ").strip().upper()
+        # respuesta = input("\nTu respuesta (A/B/C): ").strip().upper()
+
+        # Validar input hasta que sea A, B o C
+        while True:
+            respuesta = input("\nTu respuesta (A/B/C): ").strip().upper()
+            if respuesta in ['A', 'B', 'C']:
+                break
+            print("❗ Entrada inválida. Por favor, ingresá A, B o C.")
 
         if respuesta and ord(respuesta) - 65 == nueva_respuesta_correcta:
             print("\n✅ ¡Correcto!")
