@@ -37,6 +37,7 @@ def guardar_log(puntaje, cantidad, respuestas_incorrectas):
         else:
             f.write("\n🎉 ¡Todas las respuestas fueron correctas!")
 
+    # Mostrar mensaje de resultado
     print(f"📝 Resultado guardado en: {nombre_archivo}")
 
 def realizar_test(preguntas, cantidad):
