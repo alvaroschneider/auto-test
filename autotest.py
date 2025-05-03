@@ -37,7 +37,6 @@ def guardar_log(puntaje, cantidad, respuestas_incorrectas):
         else:
             f.write("\n🎉 ¡Todas las respuestas fueron correctas!")
 
-    # Mostrar mensaje de resultado
     print(f"📝 Resultado guardado en: {nombre_archivo}")
 
 def realizar_test(preguntas, cantidad):
@@ -47,7 +46,6 @@ def realizar_test(preguntas, cantidad):
     random.shuffle(preguntas)
     preguntas = preguntas[:cantidad]
 
-    # Mostrar preguntas
     for i, pregunta in enumerate(preguntas, start=1):
         limpiar_pantalla()
         print(f"Pregunta {i}:\n\n{pregunta['pregunta']}")
@@ -60,16 +58,13 @@ def realizar_test(preguntas, cantidad):
                 nueva_respuesta_correcta = idx
             print(f"{chr(65 + idx)}. {opcion}")
 
-        # respuesta = input("\nTu respuesta (A/B/C): ").strip().upper()
-
-        # Validar input hasta que sea A, B o C
         while True:
             respuesta = input("\nTu respuesta (A/B/C): ").strip().upper()
             if respuesta in ['A', 'B', 'C']:
                 break
-            print("❗ Entrada inválida. Por favor, ingresá A, B o C.")
+            print("❗ Entrada inválida. Ingresá solo A, B o C.")
 
-        if respuesta and ord(respuesta) - 65 == nueva_respuesta_correcta:
+        if ord(respuesta) - 65 == nueva_respuesta_correcta:
             print("\n✅ ¡Correcto!")
             puntaje += 1
         else:
@@ -94,6 +89,8 @@ def realizar_test(preguntas, cantidad):
                 print(f"{chr(65 + idx)}. {opcion}")
             print(f"✅ Respuesta correcta: {correcta}")
 
+    return respuestas_incorrectas
+
 if __name__ == "__main__":
     preguntas = cargar_preguntas_encriptadas("preguntas.enc")
     try:
@@ -105,4 +102,27 @@ if __name__ == "__main__":
         print(f"ℹ️ Ejecutando con todas las preguntas disponibles ({cantidad}).")
         input("Presioná Enter para comenzar...")
 
-    realizar_test(preguntas, cantidad)
+    preguntas_a_usar = preguntas
+    primera_vez = True
+
+    while True:
+        if primera_vez:
+            respuestas_incorrectas = realizar_test(preguntas_a_usar, cantidad)
+            primera_vez = False
+        else:
+            respuestas_incorrectas = realizar_test(preguntas_a_usar, len(preguntas_a_usar))
+
+        if not respuestas_incorrectas:
+            break
+
+        print("\n🔁 ¿Querés volver a intentar solo con las preguntas incorrectas?")
+        input("Presioná Enter para continuar o Ctrl+C para salir...")
+
+        preguntas_a_usar = []
+        for pregunta, opciones, correcta in respuestas_incorrectas:
+            idx_correcta = opciones.index(correcta)
+            preguntas_a_usar.append({
+                "pregunta": pregunta,
+                "opciones": opciones,
+                "respuesta_correcta": idx_correcta
+            })
