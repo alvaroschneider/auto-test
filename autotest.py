@@ -6,7 +6,7 @@ from cryptography.fernet import Fernet
 from datetime import datetime
 
 # 🔐 Clave generada desde encriptar_preguntas.py
-CLAVE = b'eBe0oSpQ7AilDsT28_VsKced70-8I1fOEMlu63lRIq0='
+CLAVE = b'rRfYpARSSwWpIixOpdcywL7KRkcGOFXX-Fro-YoQEo8='
 
 def limpiar_pantalla():
     os.system('cls' if os.name == 'nt' else 'clear')
