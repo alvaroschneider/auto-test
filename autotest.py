@@ -6,7 +6,7 @@ from cryptography.fernet import Fernet
 from datetime import datetime
 
 # 🔐 Clave generada desde encriptar_preguntas.py
-CLAVE = b'rRfYpARSSwWpIixOpdcywL7KRkcGOFXX-Fro-YoQEo8='
+CLAVE = b'j4l5iNXVMlA1HKfjLvxDROJ19hEXbP1hZPy-uYjQlW0='
 
 def limpiar_pantalla():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -29,15 +29,16 @@ def guardar_log(puntaje, cantidad, respuestas_incorrectas):
 
         if respuestas_incorrectas:
             f.write("\n\nPreguntas incorrectas:")
-            for pregunta, opciones, correcta in respuestas_incorrectas:
+            for pregunta, opciones, correctas, seleccionadas in respuestas_incorrectas:
                 f.write(f"\n\n\nPregunta: {pregunta}")
                 for idx, opcion in enumerate(opciones):
                     f.write(f"\n{chr(65 + idx)}. {opcion}")
-                f.write(f"\n\n✅ Respuesta correcta: {correcta}")
+                f.write(f"\n\n✅ Respuesta correcta(s): {', '.join(correctas)}")
+                f.write(f"\n❌ Tu respuesta: {', '.join(seleccionadas)}")
         else:
             f.write("\n🎉 ¡Todas las respuestas fueron correctas!")
 
-    print(f"📝 Resultado guardado en: {nombre_archivo}")
+    print(f"\n📝 Resultado guardado en: {nombre_archivo}")
 
 def realizar_test(preguntas, cantidad):
     puntaje = 0
@@ -48,29 +49,49 @@ def realizar_test(preguntas, cantidad):
 
     for i, pregunta in enumerate(preguntas, start=1):
         limpiar_pantalla()
-        print(f"Pregunta {i}:\n\n{pregunta['pregunta']}")
+        print(f"Pregunta {i}:")
+
+        if len(pregunta["respuestas_correctas"]) > 1:
+            print("💡 Tiene más de una respuesta correcta.\n")
+
+        print(f"\n{pregunta['pregunta']}")
 
         opciones = list(enumerate(pregunta["opciones"]))
         random.shuffle(opciones)
 
-        for idx, (original_idx, opcion) in enumerate(opciones):
-            if original_idx == pregunta["respuesta_correcta"]:
-                nueva_respuesta_correcta = idx
-            print(f"{chr(65 + idx)}. {opcion}")
+        # Mapeo de índice nuevo a letra
+        letra_por_indice = {idx: chr(65 + idx) for idx in range(len(opciones))}
 
+        # Determinar las letras correctas luego de mezclar
+        correctas_indices = []
+        for idx, (original_idx, _) in enumerate(opciones):
+            if original_idx in pregunta["respuestas_correctas"]:
+                correctas_indices.append(letra_por_indice[idx])
+
+        for idx, (_, opcion) in enumerate(opciones):
+            print(f"{letra_por_indice[idx]}. {opcion}")
+
+        # Validar entrada
         while True:
-            respuesta = input("\nTu respuesta (A/B/C): ").strip().upper()
-            if respuesta in ['A', 'B', 'C']:
+            entrada = input("\nTu respuesta (ej. A o A,C): ").strip().upper()
+            seleccionadas = [x.strip() for x in entrada.split(",") if x.strip()]
+            if all(sel in letra_por_indice.values() for sel in seleccionadas):
                 break
-            print("❗ Entrada inválida. Ingresá solo A, B o C.")
+            print("❌ Entrada inválida. Usá letras como A, B, C o A,C.")
 
-        if ord(respuesta) - 65 == nueva_respuesta_correcta:
+        if sorted(seleccionadas) == sorted(correctas_indices):
             print("\n✅ ¡Correcto!")
             puntaje += 1
         else:
-            correcta = opciones[nueva_respuesta_correcta][1]
-            print(f"\n❌ Incorrecto. Respuesta correcta: {chr(65 + nueva_respuesta_correcta)}. {correcta}")
-            respuestas_incorrectas.append((pregunta["pregunta"], pregunta["opciones"], correcta))
+            print(f"\n❌ Incorrecto. Respuesta correcta(s): {', '.join(sorted(correctas_indices))}")
+            respuestas_incorrectas.append(
+                (
+                    pregunta["pregunta"],
+                    [op[1] for op in opciones],
+                    sorted(correctas_indices),
+                    sorted(seleccionadas)
+                )
+            )
 
         input("\nPresioná Enter para continuar...")
 
@@ -83,11 +104,12 @@ def realizar_test(preguntas, cantidad):
 
     if respuestas_incorrectas:
         print("\n📘 Repaso de respuestas incorrectas:")
-        for pregunta, opciones, correcta in respuestas_incorrectas:
+        for pregunta, opciones, correctas, seleccionadas in respuestas_incorrectas:
             print(f"\nPregunta: {pregunta}")
             for idx, opcion in enumerate(opciones):
                 print(f"{chr(65 + idx)}. {opcion}")
-            print(f"✅ Respuesta correcta: {correcta}")
+            print(f"✅ Respuesta correcta(s): {', '.join(correctas)}")
+            print(f"❌ Tu respuesta: {', '.join(seleccionadas)}")
 
     return respuestas_incorrectas
 
@@ -102,27 +124,14 @@ if __name__ == "__main__":
         print(f"ℹ️ Ejecutando con todas las preguntas disponibles ({cantidad}).")
         input("Presioná Enter para comenzar...")
 
-    preguntas_a_usar = preguntas
-    primera_vez = True
+    respuestas_incorrectas = realizar_test(preguntas, cantidad)
 
-    while True:
-        if primera_vez:
-            respuestas_incorrectas = realizar_test(preguntas_a_usar, cantidad)
-            primera_vez = False
-        else:
-            respuestas_incorrectas = realizar_test(preguntas_a_usar, len(preguntas_a_usar))
-
-        if not respuestas_incorrectas:
-            break
-
-        print("\n🔁 ¿Querés volver a intentar solo con las preguntas incorrectas?")
-        input("Presioná Enter para continuar o Ctrl+C para salir...")
-
-        preguntas_a_usar = []
-        for pregunta, opciones, correcta in respuestas_incorrectas:
-            idx_correcta = opciones.index(correcta)
-            preguntas_a_usar.append({
-                "pregunta": pregunta,
-                "opciones": opciones,
-                "respuesta_correcta": idx_correcta
-            })
+    if respuestas_incorrectas:
+        input("\nPresioná Enter para volver a intentar solo las preguntas incorrectas...")
+        preguntas_reintento = []
+        for pregunta_texto, opciones, _, _ in respuestas_incorrectas:
+            for p in preguntas:
+                if p["pregunta"] == pregunta_texto:
+                    preguntas_reintento.append(p)
+                    break
+        realizar_test(preguntas_reintento, len(preguntas_reintento))
